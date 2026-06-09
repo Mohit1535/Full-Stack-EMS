@@ -4,6 +4,8 @@ import Loading from '../components/Loading'
 import { LockIcon, XIcon } from 'lucide-react'
 import ProfileForm from '../components/Settings/ProfileForm'
 import ChangePasswordModule from '../components/Settings/ChangePasswordModule'
+import api from '../api/assests'
+import toast from 'react-hot-toast'
 
 const Settings = () => {
   const [profile, setProfile] = useState(null)
@@ -11,10 +13,18 @@ const Settings = () => {
   const [showPasswordModel, setShowPasswordModal] = useState(false)
 
   const fetchProfile = async () => {
-    setProfile(dummyProfileData)
-    setTimeout(() => {
-      setLoading(false)
-    }, 1000)
+ try{
+  const res=await api.get("/profile")
+  const profile=res.data;
+  if(profile)  setProfile(profile);
+
+ }
+ catch(error){
+  toast.error(error?.response?.data?.error || error?.message)
+ }
+ finally{
+  setLoading(false)
+ }
   }
 
   useEffect(() => {
