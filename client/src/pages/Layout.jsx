@@ -1,8 +1,17 @@
 import React from 'react'
-import { Outlet } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import Loading from '../components/Loading'
+import { useAuth } from '../context/AutoContext'
 
 const Layout = () => {
+  const {user,loading}=useAuth()
+  if(loading){
+  return <Loading className="w-4 h-4"/>
+  }
+  if(!user){
+    return <Navigate to="/login"/>
+  }
   return (
 <div className='flex h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/30'>
 <Sidebar/>
