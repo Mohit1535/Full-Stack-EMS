@@ -15,6 +15,7 @@ import Loginform from "./components/loginform";
 import PrintPayslip from "./pages/PrintPaySlip";
 
 
+
 export default function App() {
   return (
     <>
@@ -32,10 +33,7 @@ export default function App() {
           <Route path="/payslips" element={<Payslips />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
-
-        <Route
-          path="/print/printpayslip/:id"
-          element={<PrintPayslip />} />
+<Route path="/payslips/print/:id" element={<PrintPayslip />} />
 
 
 <Route
