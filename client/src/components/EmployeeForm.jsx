@@ -4,18 +4,52 @@ import { useState } from 'react';
 import { DEPARTMENTS } from '../assets/assests';
 import { Loader, Loader2Icon } from 'lucide-react';
 import Loading from './Loading';
+import api from "../api/assests"
+import toast from 'react-hot-toast';
 const EmployeeForm = ({ initialData, onSuccess, onCancel }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const isEditMode = !!initialData?.isEditMode;// this is use to for 
+  const isEditMode = !!initialData;// this is use to for 
   // both add and edit if
   //  data exists then edit otherwise add
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setLoading(true);
+    const formData=new FormData(e.currentTarget);
+    if(isEditMode){
+      const pwd=formData.get("password");
+
+
+      if(!pwd){
+        formData.delete("password")
+      }
+
+    }
+    try{
+      const url=isEditMode? `/employees/${initialData.id}` : '/employees';
+      const method=isEditMode?"put" :"post"
+      await api[method](url,formData)
+if (onSuccess) {
+  onSuccess();
+} else {
+  navigate("/employees");
+}
+   
+
+
+    }
+    catch(error){
+toast.error(error?.response?.data?.error || error.message)
+console.error("failed to fetch employee")
+
+    }finally{
+      setLoading(false)
+    }
+    
   }
   return (
-    <form onSubmit="handleSubmit" className='space-y-6 max-w-3xl animate-fade-in'>
+    <form onSubmit={handleSubmit} className='space-y-6 max-w-3xl animate-fade-in'>
 
       {/* Personal Information */}
       <div className='card p-5 sm:p-6'>
@@ -82,11 +116,11 @@ border-b border-slate-100'>Employment Details</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm
 text-slate-700">
           <label className='block mb-2'>Department</label>
-          <select
-            className="max-w-40"
-            defaultValue={initialData?.department || ""}
-
-          >
+        <select
+  name="department"
+  className="max-w-40"
+  defaultValue={initialData?.department || ""}
+>
             <option value="">All Departments</option>
 
             {DEPARTMENTS.map((deptName) => (
@@ -110,7 +144,7 @@ text-slate-700">
 
         <div>
           <label className='block mb-2'>Allowance</label>
-          <input min="0" step="0.01 " type="number" name="allowance" required defaultValue={initialData?.allowance || 0} />
+          <input min="0" step="0.01 " type="number" name="allowances" required defaultValue={initialData?.allowance || 0} />
         </div>
 
 
@@ -184,8 +218,8 @@ gap-3 pt-2">
 
           {loading &&
             <Loading />}
-          {isEditMode ? "Update Employee" : "Create Employee"}
-
+          {isEditMode? "Update Employee" : "Create Employee"}
+        
         </button>
 
       </div>
