@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { dummyEmployeeData, DEPARTMENTS } from "../assets/assests";
 import {
   Plus,
@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import EmployeeCard from "../components/EmployeeCard";
 import Loading from "../components/Loading";
 import EmployeeForm from "../components/EmployeeForm";
-
+import api from "../api/assests";
 const Employees = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,19 +24,34 @@ const Employees = () => {
     fetchEmployees();
   }, [selectDept]);
 
-  function fetchEmployees() {
+  const fetchEmployees=useCallback(async()=>{
+    
+// Before Backend->
+    // const data = dummyEmployeeData.filter((emp) =>
+    //   selectDept ? emp.department === selectDept : emp
+    // );
+
+    // setEmployees(data);
+
+    // setTimeout(() => {
+    //   setLoading(false);
+    // }, 800);
+
+  //After Backend    
+  try{
+const url=selectDept? `/employees?department=${selectDept}`:"/employees";
+const res=await api.get(url);
+setEmployees(res.data)
+}
+catch(error){
+  console.error("Failed to fetch employees")
+}
+finally{
+  setLoading(false)
+}
+},[selectDept]) 
 
 
-    const data = dummyEmployeeData.filter((emp) =>
-      selectDept ? emp.department === selectDept : emp
-    );
-
-    setEmployees(data);
-
-    setTimeout(() => {
-      setLoading(false);
-    }, 800);
-       }
 
   const filtered = employees.filter((emp) =>
     `${emp.firstName} ${emp.lastName} ${emp.position}`
@@ -145,7 +160,7 @@ const Employees = () => {
                   >
                     <XIcon size={18} />
                   </button>
-                </div>
+                </div> 
 
                 {/* Body */}
                 <div className="p-6">
@@ -199,12 +214,16 @@ const Employees = () => {
 
       {/* Footer */}
 <div className="p-6">
-<EmployeeForm initialData={editEmployee}
-onCancel={()=>{setEditEmployee(null)
-  fetchEmployees
+<EmployeeForm
+  initialData={editEmployee}
+  onCancel={() => {
+    setEditEmployee(null);
+    fetchEmployees();
+  }}
+onSuccess={() => {
+  setEditEmployee(null);
+  fetchEmployees();
 }}
-onSuccess={()=>setEditEmployee(null)}
-
 />
 </div>
     </div>
