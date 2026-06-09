@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { dummyLeaveData } from '../assets/assests'
 import Loading from '../components/Loading'
 import { PalmtreeIcon, PlusIcon, ThermometerIcon, UmbrellaIcon } from 'lucide-react'
 import LeaveHistory from '../components/leave/LeaveHistory'
 import ApplyLeaveModel from '../components/leave/ApplyLeaveModel'
-
+import { useAuth } from '../context/AutoContext'   
+import toast from 'react-hot-toast'
+import api from '../api/assests'
 const Leave = () => {
 
   const [leaves, setLeaves] = useState([])   // ❗ missing state
@@ -12,18 +14,29 @@ const Leave = () => {
   const [showModal, setShowModal] = useState(false)
   const [isDeleted, setIsDeleted] = useState(false)
 
-  const isAdmin = false;
+ const {user}=useAuth()
+ const isAdmin=user?.role==="ADMIN"
 
-  const fetchLeaves = () => {
-    setLeaves(dummyLeaveData);
-    setTimeout(() => {
-      setLoading(false)
-    }, 1000)
+const fetchLeaves = async () => {
+  try {
+    const res = await api.get("/leave");
+
+    setLeaves(res.data.data || []);
+    console.log(res.data);
+
+    if (res.data.employee?.isDeleted) {
+      setIsDeleted(true);
+    }
+  } catch (error) {
+    toast.error(error?.response?.data?.error || error.message);
+  } finally {
+    setLoading(false);
   }
+};
 
   useEffect(() => {
     fetchLeaves()
-  }, [fetchLeaves])   // ❗ removed dependency issue
+  }, [])   // ❗ removed dependency issue
 
   if (loading) return <Loading />
 
