@@ -9,7 +9,10 @@ export const getEmployees = async (req, res) => {
         const where = {}
         if (department) where.department = department
 
-        const employees = await Employee.find((where).toSorted({ createdAt: -1 }).populate('userId', "email role").lean())
+        const employees = await Employee.find(where)
+  .sort({ createdAt: -1 })
+  .populate("userId", "email role")
+  .lean();
 
         //createdAt-1->Sort employees by creation time.
         //populate->Fetch related user data from User collection.
@@ -39,91 +42,191 @@ export const getEmployees = async (req, res) => {
 
 
 export const createEmployees = async (req, res) => {
-    try {
-        const { firstName, lastName, email, phone, position, basicSalary,
-            allowances, department, deduction, employmentStatus, joinDate,
-            password, role, bio } = req.body;
+  try {
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      position,
+      basicSalary,
+      allowances,
+      deductions,
+      department,
+      employmentStatus,
+      joinDate,
+      password,
+      role,
+      bio
+    } = req.body;
 
-        if (!email || !password || !firstName || !lastName) {
-            return res.status(400).json({ error: "Missing required fields" })
-        }
-        const hashed = await bcrypt.hash(password, 10);
-        const user = await User.create({
-            email,
-            password: hashed,
-            role: role || "EMPLOYEE"
-        })
-        const employee = await Employee.create({
-            userId: user._Id,
-            firstName, lastName, email, phone, position, basicSalary: Number(basicSalary) || 0,
-            allowances: Number(allowances) || 0, deductions: Number(deductions) || 0, employmentStatus, joinDate: new Date(joinDate),
-            bio: bio || "", department: department || "Engineering"
-        })
-        return res.status(201).json({ success: true, employee })
+    if (!firstName || !lastName || !email || !password) {
+      return res
+        .status(400)
+        .json({ error: "Missing required fields" });
     }
-    catch (error) {
-        //error.code===11000 means it use to check duplicate emails found or not
-        if (error.code === 11000) return res.status(400).json({ error: "Email already exists" })
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      email,
+      password: hashedPassword,
+      role: role || "EMPLOYEE"
+    });
+
+    const employee = await Employee.create({
+      userId: user._id,
+
+      firstName,
+      lastName,
+      email,
+      phone,
+      position,
+
+      basicSalary: Number(basicSalary) || 0,
+      allowances: Number(allowances) || 0,
+      deductions: Number(deductions) || 0,
+
+      employmentStatus: employmentStatus || "ACTIVE",
+
+      joinDate: new Date(joinDate),
+
+      bio: bio || "",
+
+      department: department || "Engineering"
+    });
+
+    return res.status(201).json({
+      success: true,
+      employee
+    });
+  } catch (error) {
+    console.error(error);
+
+    if (error.code === 11000) {
+      return res.status(400).json({
+        error: "Email already exists"
+      });
     }
-    console.error("Create employee error:", error)
-    return res.status(500).json({ error: "Failed to create employee" })
-}
+
+    return res.status(500).json({
+      error: "Failed to create employee"
+    });
+  }
+};
 
 
 //Update employee
 //PUT/api/employees/:id
 
 export const updateEmployees = async (req, res) => {
-    try {
-        const { id } = req.params
-        const { firstName, lastName, email, phone, position, basicSalary,
-            allowances, department, deduction, employmentStatus, joinDate,
-            password, role, bio } = req.body;
+  try {
+    const { id } = req.params;
 
-        const employee = await Employee.findById(id)
-        if (!employee) return res.status(400).json({ error: "Employee Not Found" })
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      position,
+      basicSalary,
+      allowances,
+      deductions,
+      department,
+      employmentStatus,
+      joinDate,
+      password,
+      role,
+      bio,
+    } = req.body;
 
-         await Employee.findByIdAndUpdate(id, {
-id,
-            firstName, lastName, email, phone, position, basicSalary: Number(basicSalary) || 0,
-            employmentStatus: employementStatus || "ACTIVE",
-            allowances: Number(allowances) || 0, deductions: Number(deductions) || 0,
-            employmentStatus, joinDate: new Date(joinDate),
-            bio: bio || "",
-            department: department || "Engineering"
-        })
-        //Update user record
-        const userUpdate={email}
-        if(role)userUpdate.role=role;
-        if(password)userUpdate.password=await bcrypt.hash(password,10)
-            await User.findByIdAndUpdate(employee.userId,userUpdate)
+    const employee = await Employee.findById(id);
 
-        return res.json({ success: true})
+    if (!employee) {
+      return res.status(404).json({
+        error: "Employee not found",
+      });
     }
-    catch (error) {  
-        //error.code===11000 means it use to check duplicate emails found or not
-        if (error.code === 11000) return res.status(400).json({ error: "Email already exists" })
-    }
-    console.error("Create employee error:", error)
-    return res.status(500).json({ error: "Failed to Update employee" })
-}
 
+    // Update Employee
+    await Employee.findByIdAndUpdate(
+      id,
+      {
+        firstName,
+        lastName,
+        email,
+        phone,
+        position,
+        basicSalary: Number(basicSalary) || 0,
+        allowances: Number(allowances) || 0,
+        deductions: Number(deductions) || 0,
+        department: department || "Engineering",
+        employmentStatus: employmentStatus || "ACTIVE",
+        joinDate: joinDate ? new Date(joinDate) : employee.joinDate,
+        bio: bio || "",
+      },
+      { new: true }
+    );
+
+    // Update User
+    const userUpdate = { email };
+
+    if (role) {
+      userUpdate.role = role;
+    }
+
+    if (password) {
+      userUpdate.password = await bcrypt.hash(password, 10);
+    }
+
+    await User.findByIdAndUpdate(employee.userId, userUpdate);
+
+    return res.json({
+      success: true,
+      message: "Employee updated successfully",
+    });
+  } catch (error) {
+    console.error("Update employee error:", error);
+
+    if (error.code === 11000) {
+      return res.status(400).json({
+        error: "Email already exists",
+      });
+    }
+
+    return res.status(500).json({
+      error: "Failed to update employee",
+    });
+  }
+};
 
 
 //Delete employee
 //DELETE/api/employees/:id
 export const deleteEmployees = async (req, res) => {
-    try {
-const {id}=req.params
-const employee=await Employee.findById(id)
-if(!employee) res.status(400).json({error:"Employee Not Found"});
-employee.isDeleted=true;
-employee.employementStatus="INACTIVE"
-await employee.save()
-return res.json({success:true})
+  try {
+    const { id } = req.params;
+
+    const employee = await Employee.findById(id);
+
+    if (!employee) {
+      return res.status(404).json({
+        error: "Employee Not Found",
+      });
     }
-    catch(error){
-return res.status(500).json({error:"Failed to fetch employee"})
-    }
+
+    await Employee.findByIdAndDelete(id);
+
+    return res.json({
+      success: true,
+      message: "Employee deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete employee error:", error);
+
+    return res.status(500).json({
+      error: "Failed to delete employee",
+    });
+  }
 }
 
