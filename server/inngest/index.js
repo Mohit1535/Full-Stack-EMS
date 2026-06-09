@@ -212,9 +212,9 @@ const leaveApplicationReminder = inngest.createFunction(
       // Send reminder email here
    await sendEmail({
     to:process.env.ADMIN_EMAIL,
-    sunject:'Leave Application Reminder',
+    subject:'Leave Application Reminder',
     body:`
-    <div ctyle="max-width:600px;">
+    <div style="max-width:600px;">
     <h2>Hi Admin, </h2>
     <p style="font-size:16px;">You have a leave application in ${employee.department} today</p>
     <p style='font-size:18px; font-weight:bold; color:#007bff; margin:8px 0;">${leaveApplication?.startDate?.toLocaleDateString()}</p>
