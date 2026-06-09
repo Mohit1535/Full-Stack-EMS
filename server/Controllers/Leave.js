@@ -1,6 +1,6 @@
 import Employee from "../models/Employee.js";
 import Leave from "../models/Leave.js";
-
+import { inngest } from "../inngest/index.js";
 //get leave
 export const getLeave = async (req, res) => {
     try {
@@ -61,6 +61,10 @@ export const getLeave = async (req, res) => {
     }
 };
 
+
+
+
+
 //create leave
 export const createLeave = async (req, res) => {
 
@@ -109,8 +113,10 @@ export const createLeave = async (req, res) => {
                 error: "please enter the end date more then start date"
             });
         }
-
+   console.log("BODY:", req.body);
+        console.log("SESSION:", req.session);
         const leave = await Leave.create({
+            
             employeeId: employee._id,
             startDate,
             endDate,
@@ -118,23 +124,29 @@ export const createLeave = async (req, res) => {
             type,
             status: "PENDING"
         });
-await inngest.send({
+// await inngest.send({
 
-    name:"leave/pending",
-    data:{leaveApplicationId:leave._id,}
-})
+    // name:"leave/pending",
+    // data:{leaveApplicationId:leave._id,}
+// })
         return res.json({
             data: leave,
             success: true
         });
 
-    } catch (error) {
+} catch (error) {
+    console.log("CREATE LEAVE ERROR:", error);
 
-        return res.status(500).json({
-            error: "Operation failed"
-        });
-    }
-};
+    return res.status(500).json({
+        error: error.message
+    });
+}
+}
+
+
+
+
+
 
 //update leave
 export const updateLeave = async (req, res) => {
