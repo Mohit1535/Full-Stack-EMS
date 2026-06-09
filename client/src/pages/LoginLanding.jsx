@@ -2,10 +2,17 @@ import React, { useState } from 'react'
 import LoginLeftSide from '../components/LoginLeftSide'
 import { Link } from 'react-router-dom'
 import { ArrowRightIcon, ArrowRightLeftIcon, ShieldIcon, UserIcon } from 'lucide-react'
-
+import { useAuth } from '../context/AutoContext'
+import Loading from '../components/Loading'
+import { Navigate } from 'react-router-dom'
 const LoginLanding = () => {
 
-  // const portalOptions=[
+
+  const {user,loading}=useAuth()
+if(loading) return <Loading className="w-4 h-4"/>
+if(user) return <Navigate to="/"/>
+
+// const portalOptions=[
   //   {
   //     to:"/login/admin",
   //     title:"Admin Portal",
