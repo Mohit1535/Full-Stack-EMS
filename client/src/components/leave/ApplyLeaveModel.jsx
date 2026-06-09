@@ -1,7 +1,8 @@
 import { CalendarDays, FileTextIcon, Send, XIcon } from 'lucide-react';
 import React, { useState } from 'react'
 import Loading from '../Loading';
-
+import toast from 'react-hot-toast';
+import api from '../../api/assests';
 const ApplyLeaveModel = ({onClose,open,onSuccess}) => {
   
   const [loading,setLoading]=useState(false);
@@ -12,8 +13,21 @@ const ApplyLeaveModel = ({onClose,open,onSuccess}) => {
 
 const handleSubmit=async(e)=>{
     e.preventDefault();
-}
 
+    const formData=new FormData(e.currentTarget)
+    const data=Object.fromEntries(formData.entries())
+
+try{
+await api.post("/leave",data)
+onSuccess()
+onClose()
+}
+catch(error){
+console.error("failed to create leave")
+toast.error(error.response?.data?.error || error?.message)
+
+}
+}
 if(!open) return null
     return (
   <>
