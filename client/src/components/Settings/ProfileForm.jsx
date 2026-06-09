@@ -2,6 +2,7 @@ import { Loader, Save, UserIcon } from 'lucide-react';
 import React from 'react'
 import { useState } from 'react';
 import Loading from '../Loading';
+import api from '../../api/assests';
 const ProfileForm = ({initialData, onSuccess}) => {
     const [loading,setLoading]=useState(false)
     const [error,setError]=useState("");
@@ -9,6 +10,26 @@ const ProfileForm = ({initialData, onSuccess}) => {
     
     const handleSubmit=async(e)=>{
         e.preventDefault();
+        setLoading(true);
+        setError("")
+        setMessage("")
+            const formData=new FormData(e.currentTarget);
+
+        try{
+    await api.post("/profile",formData);
+    setMessage("Profile updated successfully");
+    
+    onSuccess?.()
+            
+        }
+
+        catch(error){
+            setError(error.response?.data?.error || error.message)
+
+        }
+    finally{
+        setLoading(false)
+    }
     }
  
   return (
