@@ -1,33 +1,47 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { dummyAttendanceData, dummyEmployeeData } from '../assets/assests'
 import Loading from '../components/Loading'
 import CheckInButton from '../components/Attendance/CheckInButton'
 import AttendanceStats from '../components/Attendance/AttendanceStats'
 import AttendanceHistory from '../components/Attendance/AttendanceHistory'
-
+import api from '../api/assests.js'
+import toast from 'react-hot-toast'
+import {useAuth} from "../context/AutoContext.jsx"
 const Attendance = () => {
   const [history,setHistory]=useState([])
   const [loading,setLoading]=useState(true)
   const [isDeleted,setIsDeleted]=useState(false)
-  
-function fetchData(){
+  const {user}=useAuth();
+  const isAdmin=user?.role==="ADMIN"
+const fetchData = async () => {
+  setLoading(false)
 
-setHistory(dummyAttendanceData)
-  setTimeout(()=>{
-    setLoading(false)
-  },1000)
-}
-  
+  try {
+    const response = await api.get("/attendance");
+
+    setHistory(response.data.data || []);
+
+    if (response.data.employee?.isDeleted) {
+      setIsDeleted(true);
+    }
+  } catch (error) {
+    toast.error(error?.response?.data?.error || error?.message);
+  } finally {
+    setLoading(false);
+  }
+};
 useEffect(()=>{
   fetchData()
   console.log("changed")
-},[fetchData])
+},[])
   
-if(loading) return <Loading/>
+
 const today=new Date()
 today.setHours(0,0,0,0)
-const todayRecord=history.find((r)=>
-new Date(r.date).toDateString===today.toDateString())
+const todayRecord = history.find(
+  (r) => new Date(r.date).toDateString() === today.toDateString()
+);
+  if (loading) return <Loading />
   return (
 <div className="animate-fade-in">
 <div className="page-header">
@@ -48,13 +62,14 @@ Attendance
 ):
 (
 <div className='mb-8'>
-<CheckInButton todayRecord={todayRecord} onAction={fetchData}/>
+
+{isAdmin ?"": <CheckInButton todayRecord={todayRecord} onAction={fetchData}/> }
 
 </div>
 )}
 
-<AttendanceStats history={history}/>
-<AttendanceHistory history={history}/>
+{isAdmin? "" :<AttendanceStats history={history}/>}
+<AttendanceHistory history={history}  isAdmin={isAdmin}/>
 </div>
 
   )
