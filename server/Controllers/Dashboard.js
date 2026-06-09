@@ -22,7 +22,7 @@ export const getDashboard = async (req, res) => {
                     Attendance.countDocuments({
                         date: {
                             $gte: new Date(new Date().setHours(0, 0, 0, 0)),//$gte-> greater then or equal to
-                            $lt: new Date(new Date().setHours(24, 0, 0, 0)),//$lt-> //less than or qual to
+                            $lt: new Date(new Date().setHours(24, 0, 0, 0)),//$lt-> //less than or equal to
                         }
                     }),
 
