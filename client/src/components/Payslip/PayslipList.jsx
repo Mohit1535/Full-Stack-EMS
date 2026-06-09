@@ -2,7 +2,9 @@ import { format } from 'date-fns'
 import { DownloadIcon } from 'lucide-react'
 import React from 'react'
 
-const PayslipList = ({ payslips, isAdmin }) => {
+const PayslipList = ({ payslips, isAdmin,employee }) => {
+
+
   return (
     <div className="card overflow-hidden">
       <div className="overflow-x-auto">
@@ -43,7 +45,7 @@ const PayslipList = ({ payslips, isAdmin }) => {
 
                       
                     </td>
-                    <td>{p.employee.department}</td>
+                    <td>{p.employee?.department}</td>
                     </>
                   )}
 
@@ -52,24 +54,23 @@ const PayslipList = ({ payslips, isAdmin }) => {
                   </td>
 
                   <td className="text-slate-500">
-                    ${p.basicSalary?.toLocaleString()}
+                      ₹{p.basicSalary?.toLocaleString()}
                   </td>
 
                   <td className="font-medium text-slate-800">
-                    ${p.netSalary?.toLocaleString()}
+                      ₹{p.netSalary?.toLocaleString()}
                   </td>
-
-                  <td className="text-center">
-                    <button
-                      onClick={() =>
-                        window.open(`/print/printpayslip/${p.id || p._id}`)
-                      }
-                      className="btn-primary flex items-center gap-2 justify-center"
-                    >
-                      <DownloadIcon className="h-4 w-4" />
-                      Download
-                    </button>
-                  </td>
+<td className="text-center">
+  <button
+    onClick={() =>
+window.open(`/payslips/print/${p.id || p._id}`, "_blank")
+    }
+    className="btn-primary flex items-center gap-2 justify-center"
+  >
+    <DownloadIcon className="h-4 w-4" />
+    Download
+  </button>
+</td>
                 </tr>
               ))
             )}
