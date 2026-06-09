@@ -1,15 +1,36 @@
 import React, { useEffect } from "react";
 import { dummyEmployeeDashboardData } from "../assets/assests";
+import toast from "react-hot-toast";
+import api from "../api/assests"
 
-const EmployeeCard = ({ employee,  onEdit }) => {
+const EmployeeCard = ({ employee,  onEdit, onDelete }) => {
+const isDeleted=false;
 
+const handleDelete = async () => {
+  if (!window.confirm("Are you sure you want to delete the record?")) {
+    return;
+  }
 
+  try {
+    const res = await api.delete(`/employees/${employee.id}`);
 
-function handleDelete(){
-  if(window.confirm("Are you sure want to delete the record"))
-  return;
-}
+    console.log("DELETE SUCCESS:", res.data);
+
+    if (onDelete) {
+      await onDelete();
+    }
+
+    toast.success("Employee deleted");
+  } catch (error) {
+    console.log("STATUS:", error.response?.status);
+    console.log("DATA:", error.response?.data);
+    console.error(error);
+
+    toast.error(error.response?.data?.error || error.message);
+  }
+};
   return (
+   
     <div className="group relative bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
       
       {/* Top Section */}
@@ -51,9 +72,10 @@ function handleDelete(){
 
           <button
             onClick={handleDelete}
+            
             className="flex-1 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition text-sm font-medium"
           >
-            Delete
+        {isDeleted===true? "Deleted" : "Delete"}
           </button>
         </div>
       </div>
