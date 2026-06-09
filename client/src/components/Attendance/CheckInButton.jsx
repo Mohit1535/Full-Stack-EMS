@@ -2,14 +2,23 @@ import React from 'react'
 import Loading from '../Loading'
 import { LogInIcon, LogOut, LogOutIcon } from 'lucide-react'
 import { useState } from 'react'
+import api from '../../api/assests'
+import toast from 'react-hot-toast'
 const CheckInButton = ({todayRecord, onAction}) => {
     const[loading,setLoading]=useState(false)
     const handleAttendance=async()=>{
+        try{
         setLoading(true)
-        setTimeout(()=>{
-            setLoading(false)
-            onAction()
-        },1000)
+       await api.post("/attendance")
+    onAction()
+           }   catch(error){
+toast.error(error?.response?.data?.error || error?.message);
+
+    }
+    finally{
+        setLoading(false)
+    }
+    
     }
 const isCheckedIn=!!todayRecord?.isCheckedIn
     if(todayRecord?.checkOut){
