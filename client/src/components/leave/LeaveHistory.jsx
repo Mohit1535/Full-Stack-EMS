@@ -2,10 +2,21 @@ import React, { useState } from 'react'
 import Loading from '../Loading'
 import { Check, CheckIcon, XIcon } from 'lucide-react'
 import {format} from 'date-fns'
+import api from '../../api/assests'
 const LeaveHistory = ({leaves,isAdmin,onUpdate}) => {
     const [processing,setProcessing]=useState(null)
     const handleStatusUpdate=async(id, status)=>{
         setProcessing(id)
+        try{
+await api.patch(`/leave/${id}`,{status})
+onUpdate();
+        }
+        catch(error){
+toast.error(error?.response?.data?.error || error?.message)
+        }
+        finally{
+            setProcessing(null);
+        }
     }
   return (
 <>  
@@ -56,10 +67,9 @@ return (
             
         </td>
 
-            <td className=' text-slate-600 title={leaves.reason'>
-
-            {leaves.reason}
-        </td>
+     <td className='text-slate-600' title={leaves.reason}>
+  {leaves.reason}
+</td>
 
     
 
@@ -72,7 +82,7 @@ return (
     <td>
 {leaves.status==="PENDING" && (
     <div className="flex justify-center gap-2">
-<button disabled={!processing} onClick={()=>handleStatusUpdate(leaves.id||leaves._id,"APPROVED")} className='p-1.5 rounded-md bg-emerald-50 text-emerald-600
+<button disabled={processing} onClick={()=>handleStatusUpdate(leaves.id||leaves._id,"APPROVED")} className='p-1.5 rounded-md bg-emerald-50 text-emerald-600
 hover:bg-emerald-100
 transition-colors'>
     {processing===(leaves.id||leaves._id) ?
@@ -80,7 +90,7 @@ transition-colors'>
     <CheckIcon className='w-4 h-4'/>}
 </button>
 
-<button disabled={!processing} onClick={()=>handleStatusUpdate(leaves.id || leaves._id, "REJECTED")} className='p-1.5 rounded-md bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors'>
+<button disabled={processing} onClick={()=>handleStatusUpdate(leaves.id || leaves._id, "REJECTED")} className='p-1.5 rounded-md bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors'>
     {processing===(leaves.id||leaves._id) ?
     <Loading className='w-4 h-4'/>:
     <XIcon className='w-4 h-4'/>}
