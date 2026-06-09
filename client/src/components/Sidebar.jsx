@@ -2,6 +2,8 @@ import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { dummyProfileData } from '../assets/assests'
+import Loading from './Loading'
+import api from '../api/assests'
 import {
   CalendarIcon,
   ChevronRightIcon,
@@ -14,14 +16,30 @@ import {
   UserIcon,
   XIcon
 } from 'lucide-react'
+import { useAuth } from '../context/AutoContext'
 
+
+
+const Sidebar = () => {
+  const { pathname } = useLocation()
+    const [userName, setUserName] = useState('')
+    const [mobileOpen, setMobileOpen] = useState(false)
+    
 const handleLogout=()=>{
+logout()
     window.location.href="/login"
 }
-const Sidebar = () => {
+    
+    useEffect(()=>{
+        api.get("/profile").then(({data})=>{
+            if(data.firstName) setUserName(`${data.firstName} ${data.lastName || ""}`.trim())
+        })
+    },[])
+const {user,loading,logout}=useAuth();
 
-    const role = "ADMIN" || "EMPLOYEE";
+    // const role = "ADMIN" || "EMPLOYEE";
 
+    const role=user?.role;
     const navItems = [
         {
             name: "Dashboard",
@@ -29,13 +47,13 @@ const Sidebar = () => {
             href: "/dashboard"
         },
 
-        role === "ADMIN"
-            ? {
+
+             {
                 name: "Employees",
                 icon: UserIcon,
                 href: "/employees"
-            }
-            : {
+            },
+             {
                 name: "Attendance",
                 icon: CalendarIcon,
                 href: "/attendance"
@@ -59,9 +77,7 @@ const Sidebar = () => {
         },
     ]
 
-    const { pathname } = useLocation()
-    const [userName, setUserName] = useState('')
-    const [mobileOpen, setMobileOpen] = useState(false)
+  
 
     const sidebarContent = (
         <>
@@ -123,7 +139,16 @@ const Sidebar = () => {
 
             {/* Navigation List */}
             <div className='flex-1 px-3 space-y-0.5 overflow-y-auto'>
-                {navItems.map((item) => {
+                
+                {loading ?(
+<div className='px-3 py-3 flex items-center gap-2 text-slate-500'>
+<Loading className="w-4 h-4"/>
+<span className='text-sm'>Loading...</span>
+    </div>
+):(
+
+
+    navItems.map((item) => {
                     const isActive = pathname.startsWith(item.href)
 
                     return (
@@ -151,7 +176,11 @@ const Sidebar = () => {
                             )}
                         </Link>
                     )
-                })}
+                })
+
+                )}
+                
+            
             </div>
 
 
@@ -169,11 +198,11 @@ const Sidebar = () => {
         </>
     )
 
-    useEffect(() => {
-        setUserName(
-            dummyProfileData.firstName + " " + dummyProfileData.lastName
-        )
-    }, [])
+    // useEffect(() => {
+    //     setUserName(
+    //         dummyProfileData.firstName + " " + dummyProfileData.lastName
+    //     )
+    // }, [])
 
     useEffect(() => {
         setMobileOpen(false)
