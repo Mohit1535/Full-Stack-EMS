@@ -3,17 +3,31 @@ import { dummyAdminDashboardData, dummyEmployeeDashboardData } from '../assets/a
 import Loading from '../components/Loading'
 import EmployeeDashboard from '../components/Employee_Dashboard'
 import AdminDashboard from '../components/Admin_Dashboard'
-
+import toast from 'react-hot-toast'
+import api from '../api/assests'
 const Dashboard = () => {
   const[data,setData]=useState(null)
   const [loading,setLoading]=useState(true)
 
   useEffect(()=>{
 // setData(dummyEmployeeDashboardData)
-setData(dummyAdminDashboardData)
-setTimeout(()=>{
-setLoading(false)
-},1000)
+// setData(dummyAdminDashboardData)
+
+api.get("/dashboard")
+  .then((res) => {
+    setData(res.data);
+  })
+  .catch((error) => {
+    toast.error(
+      error.response?.data?.error || error.message
+    );
+  })
+  .finally(() => {
+    setLoading(false);
+  });
+// setTimeout(()=>{
+// setLoading(false)
+// },1000)
   },[])
 
   if(loading) return <Loading/> 
